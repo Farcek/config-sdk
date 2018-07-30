@@ -1,0 +1,23 @@
+{
+  "name": "config-sdk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "tsc": "tsc",
+    "pretest":"tsc",
+    "test":"set DEBUG=* && node lib/test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^10.5.1",
+    "typescript": "^2.9.2"
+  },
+  "dependencies": {
+    "debug": "^3.1.0",
+    "jsonwebtoken": "^8.3.0",
+    "request": "^2.87.0"
+  }
+}
