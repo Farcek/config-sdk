@@ -1,0 +1,13 @@
+{
+  // You can even comment your JSON, if you want
+  
+  
+
+  "baseUri": "http://localhost:3035",
+  "appid": 3,
+  
+  "appsecret": "123456789",
+  
+  "env" : "prod"
+  
+}

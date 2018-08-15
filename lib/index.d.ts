@@ -1,37 +1,27 @@
-export interface IConfigSDK {
+interface IRcConfig {
     appid: number;
-    secretKey: string;
-    env?: string;
+    appsecret: string;
     /**
-     * Logger service base url
+     * config cache dir
+     */
+    cachedir: string;
+    /**
+     * byte config service base url
      * default : `http://config.byte.mn`
      */
-    baseUri?: string;
-    request?: {
-        /**
-         * request timeout
-         * default : 5 sec
-         */
-        timeout?: number;
-    };
+    baseUri: string;
+    env: string;
 }
-export interface IConfig {
-    [key: string]: {
-        [key: string]: any;
-    };
-}
-export declare class ConfigSDK {
-    private options;
-    constructor(options: IConfigSDK);
-    private _inited;
-    readonly inited: boolean;
-    private _dta;
-    readonly dta: any;
-    readonly requestTimeout: number;
-    readonly requestBaseuri: string;
-    readonly requestToken: string;
-    readonly configEnv: string;
-    init(): Promise<void>;
-}
-export declare function configInit(opt: IConfigSDK): Promise<void>;
-export declare function config(): IConfig;
+export declare const byteconfig: {
+    rcConfig: IRcConfig;
+    readonly env: string;
+    readonly token: any;
+    readonly cachedir: any;
+    readonly configfile: string;
+    dta: any;
+    readonly config: any;
+};
+export declare function configInit(): Promise<any>;
+export declare function config(): any;
+export declare function configFromCache(): any;
+export {};

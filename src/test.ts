@@ -1,15 +1,17 @@
 import { configInit, config } from "./index";
 
+interface ICo {
+    name : boolean;
+    db:any;
+}
+
 async function test() {
 
-    await configInit({
-        baseUri: "http://localhost:5010",
-        appid: 3,
-        env : "prod",
-        secretKey: "12345678"
-    });
+    // await configInit();
 
-    let conf = config();
+    let conf:ICo = config() as ICo;
+    console.log(conf)
+    return conf.db;
 }
 
 test().catch((e) => {

@@ -1,99 +1,115 @@
 const jwt = require("jsonwebtoken");
-const debug = require("debug")('logger-sdk');
+const rc = require("rc");
+const fs = require('fs');
+const path = require('path');
+const mkdirp = require('mkdirp');
+const debug = require("debug")('byteconfig');
 import * as http from './http';
 
-export interface IConfigSDK {
-    appid: number
 
-    secretKey: string
-
-    env?: string
+interface IRcConfig {
+    appid: number;
+    appsecret: string;
 
     /**
-     * Logger service base url
+     * config cache dir
+     */
+    cachedir: string;
+
+    /**
+     * byte config service base url
      * default : `http://config.byte.mn`
      */
-    baseUri?: string
+    baseUri: string;
 
-    request?: {
-        /**
-         * request timeout 
-         * default : 5 sec
-         */
-        timeout?: number
-    }
+    env: string;
 }
-export interface IConfig {
-    [key: string]: { [key: string]: any }
+
+function rcConfig() {
+    let conf: IRcConfig = rc('byteconfig', {
+        appid: 0,
+        appsecret: "",
+        cachedir: ".config",
+        baseUri: "http://config.byte.mn",
+        env: "production"
+    });
+
+    if (!conf.appid) {
+        throw new Error("not defined appid the .byteconfigrc");
+    }
+    if (!conf.appsecret) {
+        throw new Error("not defined appsecret the .byteconfigrc");
+    }
+
+    return conf;
 }
-export class ConfigSDK {
-    constructor(private options: IConfigSDK) { }
 
-    private _inited = false;
-    get inited() {
-        return this._inited;
-    }
+export const byteconfig = {
+    rcConfig: rcConfig(),
+    get env() {
+        return process.env["BYTECONFIG_ENV"] || process.env["NODE_ENV"] || byteconfig.rcConfig.env || "production";
+    },
+    get token() {
+        let t = jwt.sign({
+            a: byteconfig.rcConfig.appid
+        }, byteconfig.rcConfig.appsecret);
+        return t;
+    },
+    get cachedir() {
+        return path.join(process.cwd(), byteconfig.rcConfig.cachedir);
+    },
+    get configfile() {
+        return `.byteconfig-${byteconfig.rcConfig.appid}`;
+    },
+    dta: null as any,
 
-    private _dta: any = null;
-    get dta() {
-        return this._dta || {};
-    }
-
-    get requestTimeout(): number {
-        return (this.options && this.options.request && this.options.request.timeout || 5) * 1000;
-    }
-
-    get requestBaseuri(): string {
-        return this.options && this.options.baseUri || "http://config.byte.mn";
-    }
-    get requestToken(): string {
-        return token(this.options.appid, this.options.secretKey);
-    }
-    get configEnv(): string {
-        return this.options && this.options.env || process.env["CONFIG_ENV"] || process.env["NODE_ENV"] || "prod";
-    }
-
-    async init() {
-
-        let initUri = `${this.requestBaseuri}/env/${this.configEnv}`;
-        debug(`config init uri : ${initUri}`);
-
-        let dta = await http.get(initUri, {
-            header: { authorization: this.requestToken },
-            timeout: this.requestTimeout
-        });
-
-        this._inited = true;
-        this._dta = dta;
-
-        console.log(dta);
+    get config() {
+        return byteconfig.dta || {};
     }
 }
 
-function token(app: number, key: string) {
-    let t = jwt.sign({
-        a: app
-    }, key);
+export async function configInit() {
+    let env = byteconfig.env;
+    let initUri = `${byteconfig.rcConfig.baseUri}/env/${env}`;
 
-    return t;
+    debug(`config init env : ${env}`);
+    debug(`config init uri : ${initUri}`);
+
+    byteconfig.dta = await http.get(initUri, {
+        header: { authorization: byteconfig.token },
+        timeout: 30 * 1000
+    });
+
+
+    let cachedir = byteconfig.cachedir;
+    let filepath = path.join(byteconfig.cachedir, byteconfig.configfile);
+    let jsonstring = JSON.stringify(byteconfig.dta);
+
+    mkdirp.sync(cachedir);
+
+    fs.writeFileSync(filepath, jsonstring, 'utf8');
+
+    debug(`config write cache dir: ${cachedir}`);
+    debug(`config write file: ${filepath}`);
+
+    return byteconfig.dta;
 }
 
-const $ = {
-    ints: <any>null
-}
-export async function configInit(opt: IConfigSDK) {
-    let c = $.ints = new ConfigSDK(opt);
-    await c.init();
+export function config() {
+    if (byteconfig.dta) return byteconfig.dta;
+
+    return configFromCache();
 }
 
+export function configFromCache() {
 
-
-export function config(): IConfig {
-    const conf: ConfigSDK = $.ints;
-
-    if (conf && conf.inited) {
-        return conf.dta;
+    let filepath = path.join(byteconfig.cachedir, byteconfig.configfile);
+    if (fs.existsSync(filepath)) {
+        debug(`config read cache : ${filepath}`);
+        var obj = JSON.parse(fs.readFileSync(filepath, 'utf8'));
+        return obj;
     }
 
-    throw new ReferenceError("config not inited");
+    debug(`config not found cache : ${filepath}`);
+    throw new Error("not found cache file");
 }

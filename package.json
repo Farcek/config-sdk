@@ -1,23 +1,31 @@
 {
-  "name": "config-sdk",
-  "version": "1.0.0",
-  "description": "",
+  "name": "byte-config",
+  "version": "1.0.1",
+  "description": "byte api system config service",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "tsc": "tsc",
-    "pretest":"tsc",
-    "test":"set DEBUG=* && node lib/test.js"
+    "pretest": "tsc",
+    "test": "set DEBUG=* && node lib/test.js",
+    "test:cli:init" : "node lib/cli.js init",
+    "test:cli:show" : "node lib/cli.js show"
   },
-  "author": "",
+  "bin": {
+    "byteconfig": "lib/cli.js"
+  },
+  "author": "farcek@gmail.com",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^10.5.1",
     "typescript": "^2.9.2"
   },
   "dependencies": {
+    "commander": "^2.17.1",
     "debug": "^3.1.0",
     "jsonwebtoken": "^8.3.0",
+    "mkdirp": "^0.5.1",
+    "rc": "^1.2.8",
     "request": "^2.87.0"
   }
 }
