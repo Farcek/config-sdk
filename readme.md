@@ -10,24 +10,37 @@ npm i --save https://github.com/Farcek/config-sdk.git
 use
 ``` typescript
 
-// initlazation
+// import
 import { configInit, config } from "./index";
 
-// init
-await configInit({
-    baseUri: "http://config.byte.mn", 
-    appid: 3,
-    env : "prod", 
-    secretKey: "12345678"
-});
+// init & config write cache file
+await configInit();
 
 
-// uses
+// load config from memery or cachefile
 let conf = config();
 
-// user
-// config.db.user
-// config.db.pass
+```
 
+Cli
+``` cli
+
+> byteconfig init -- // configration
+> byteconfig show -- all config show
+> byteconfig show [sector] -- show sector only config
+
+```
+
+.byteconfigrc - in the file location. npm [rc](https://www.npmjs.com/package/rc) package for help
+
+``` json
+
+{
+
+  "baseUri": "http://config.byte.mn",
+  "appid": 0,
+  "appsecret": "xxx",
+  "env" : "production"
+}
 
 ```

@@ -34,13 +34,23 @@ program
             })
     });
 program
-    .command('show')
+    .command('show [sector]')
     .description('byteconfig show config from cache config')
-    .action((env: string, options: any) => {
+    
+    .action((sector: string, options: any) => {
+        
         debug.enable('byteconfig*');
         try {
             let conf = config();
-            debugCli("inited config: %O", conf);
+
+            if(sector in conf) {
+                debugCli("inited config: %O", conf[sector]);
+            }
+            else {
+                debugCli("inited config: %O", conf);
+            }
+
+            
         } catch (error) {
             debugCli("failed config: %O", error);
         }

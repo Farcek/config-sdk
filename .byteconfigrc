@@ -6,7 +6,7 @@
   "baseUri": "http://localhost:3035",
   "appid": 3,
   
-  "appsecret": "123456789",
+  "appsecret": "12345678",
   
   "env" : "prod"
   
